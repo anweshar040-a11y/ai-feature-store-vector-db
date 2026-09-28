@@ -45,6 +45,6 @@ def extract_dataset():
     print("Extraction complete.")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":#only runs when file executed directly not when imported as a module
     download_dataset()
     extract_dataset()
