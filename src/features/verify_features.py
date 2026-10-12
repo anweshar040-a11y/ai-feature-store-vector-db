@@ -37,4 +37,16 @@ print(
     )
 )
 
+print("\nINTERACTION FEATURES")
+
+interaction_result = pd.read_sql_query(
+    """
+    SELECT *
+    FROM interaction_features
+    LIMIT 10;
+    """,
+    connection
+)
+
+print(interaction_result)
 connection.close()

@@ -34,6 +34,21 @@ CREATE TABLE IF NOT EXISTS movie_features (
     FOREIGN KEY(movie_id) REFERENCES movies(movie_id)
 );
 """)
+connection.execute("""
+CREATE TABLE IF NOT EXISTS interaction_features (
+    user_id INTEGER,
+    movie_id INTEGER,
+    rating REAL,
+    user_average_rating REAL,
+    movie_average_rating REAL,
+    rating_difference REAL,
+    user_activity INTEGER,
+    movie_popularity INTEGER,
+    PRIMARY KEY (user_id, movie_id),
+    FOREIGN KEY(user_id) REFERENCES users(user_id),
+    FOREIGN KEY(movie_id) REFERENCES movies(movie_id)
+);
+""")
 
 connection.commit()
 

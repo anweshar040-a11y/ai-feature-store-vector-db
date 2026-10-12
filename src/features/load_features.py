@@ -27,7 +27,16 @@ movie_features.to_sql(
     if_exists="append",
     index=False
 )
+interaction_features = pd.read_csv(
+    PROJECT_ROOT / "datasets" / "processed" / "interaction_features.csv"
+)
 
+interaction_features.to_sql(
+    "interaction_features",
+    connection,
+    if_exists="append",
+    index=False
+)
 connection.commit()
 
 print("Features loaded into SQLite.")

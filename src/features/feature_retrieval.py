@@ -78,6 +78,33 @@ def validate_movie_features(movie_id):
 
     print(f"Features found for movie {movie_id}")
     return True
+def get_interaction_features(user_id, movie_id):
+    connection = create_connection()
+
+    query = """
+    SELECT
+        user_id,
+        movie_id,
+        rating,
+        user_average_rating,
+        movie_average_rating,
+        rating_difference,
+        user_activity,
+        movie_popularity
+    FROM interaction_features
+    WHERE user_id = ?
+    AND movie_id = ?
+    """
+
+    result = pd.read_sql_query(
+        query,
+        connection,
+        params=(user_id, movie_id)
+    )
+
+    connection.close()
+
+    return result
 
 
 if __name__ == "__main__":
@@ -89,6 +116,10 @@ if __name__ == "__main__":
     print("\nMOVIE FEATURES")
     movie_result = get_movie_features(1)
     print(movie_result)
+
+    print("\nINTERACTION FEATURES")
+    interaction_result = get_interaction_features(1, 1)
+    print(interaction_result)
 
     print("\nVALIDATION")
     validate_user_features(1)
