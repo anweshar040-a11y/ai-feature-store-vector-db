@@ -124,3 +124,4 @@ if __name__ == "__main__":
     print("\nVALIDATION")
     validate_user_features(1)
     validate_movie_features(1)
+    

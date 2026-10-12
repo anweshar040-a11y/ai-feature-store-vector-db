@@ -1,3 +1,4 @@
+
 from pathlib import Path
 import sys
 import pandas as pd
@@ -13,32 +14,45 @@ processed = PROJECT_ROOT / "datasets" / "processed"
 
 user_features = pd.read_csv(processed / "user_features.csv")
 movie_features = pd.read_csv(processed / "movie_features.csv")
-
-user_features.to_sql(
-    "user_features",
-    connection,
-    if_exists="append",
-    index=False
-)
-
-movie_features.to_sql(
-    "movie_features",
-    connection,
-    if_exists="append",
-    index=False
-)
 interaction_features = pd.read_csv(
-    PROJECT_ROOT / "datasets" / "processed" / "interaction_features.csv"
+    processed / "interaction_features.csv"
 )
 
-interaction_features.to_sql(
-    "interaction_features",
-    connection,
-    if_exists="append",
-    index=False
-)
-connection.commit()
+try:
+    # Clear feature records before reloading
+    connection.execute("DELETE FROM interaction_features")
+    connection.execute("DELETE FROM movie_features")
+    connection.execute("DELETE FROM user_features")
 
-print("Features loaded into SQLite.")
+    connection.commit()
 
-connection.close()
+    user_features.to_sql(
+        "user_features",
+        connection,
+        if_exists="append",
+        index=False
+    )
+
+    movie_features.to_sql(
+        "movie_features",
+        connection,
+        if_exists="append",
+        index=False
+    )
+
+    interaction_features.to_sql(
+        "interaction_features",
+        connection,
+        if_exists="append",
+        index=False
+    )
+
+    connection.commit()
+    print("Features loaded into SQLite successfully.")
+
+except Exception:
+    connection.rollback()
+    raise
+
+finally:
+    connection.close()

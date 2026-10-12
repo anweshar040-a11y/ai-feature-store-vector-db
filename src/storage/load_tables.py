@@ -1,3 +1,4 @@
+
 from pathlib import Path
 import sys
 import pandas as pd
@@ -7,22 +8,49 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.storage.database import create_connection
 
-PROCESSED_PATH = PROJECT_ROOT / "datasets" / "processed"
-
 connection = create_connection()
+processed = PROJECT_ROOT / "datasets" / "processed"
 
-users = pd.read_csv(PROCESSED_PATH / "users.csv")
-movies = pd.read_csv(PROCESSED_PATH / "movies.csv")
-ratings = pd.read_csv(PROCESSED_PATH / "ratings.csv")
+users = pd.read_csv(processed / "users.csv")
+movies = pd.read_csv(processed / "movies.csv")
+ratings = pd.read_csv(processed / "ratings.csv")
 
-users.to_sql("users", connection, if_exists="append", index=False)
+try:
+    # Find which tables already exist in the database.
+    existing_tables = {
+        row[0]
+        for row in connection.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table'"
+        )
+    }
 
-movies.to_sql("movies", connection, if_exists="append", index=False)
+    # Delete dependent records before their parent records.
+    tables_to_clear = [
+        "interaction_features",
+        "movie_features",
+        "user_features",
+        "ratings",
+        "movies",
+        "users"
+    ]
 
-ratings.to_sql("ratings", connection, if_exists="append", index=False)
+    for table in tables_to_clear:
+        if table in existing_tables:
+            connection.execute(f"DELETE FROM {table}")
 
-connection.commit()
+    connection.commit()
 
-print("Data loaded into SQLite successfully.")
+    # Load the raw dataset in parent-to-child order.
+    users.to_sql("users", connection, if_exists="append", index=False)
+    movies.to_sql("movies", connection, if_exists="append", index=False)
+    ratings.to_sql("ratings", connection, if_exists="append", index=False)
 
-connection.close()
+    connection.commit()
+    print("Users, movies, and ratings loaded successfully.")
+
+except Exception:
+    connection.rollback()
+    raise
+
+finally:
+    connection.close()
